@@ -12,6 +12,7 @@ pygame.display.set_caption("PONG GAME")
 #COLORS
 BLACK = (0,0,0)
 WHITE = (255,255,255)
+RED = (255,0,0)
 
 #BACKGROUND
 bg_ground = pygame.Color("grey12")
@@ -24,7 +25,7 @@ WINNER_FONT = pygame.font.SysFont("comicsans",100)
 
 #CONSTANTS
 FPS = 60
-VELOCITY = 5
+VELOCITY = 10
 
 
 
@@ -72,6 +73,11 @@ def draw_winner(text):
     pygame.display.update()
     pygame.time.delay(5000)
 
+def draw_timer(timer,color):
+    winner_font_text = SCORE_FONT.render(timer,1,color)
+    WIN.blit(winner_font_text,(WIDTH//2 - 20,10))
+    pygame.display.update()
+
 
 def main():
 
@@ -81,7 +87,9 @@ def main():
     p1_score = 3
     p2_score = 3
     winner_text =""
+    color = WHITE
     #GAME LOOP
+    start_time = 60000
     clock = pygame.time.Clock()
     run = True
     while run:
@@ -89,11 +97,10 @@ def main():
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 run = False
-                pygame.quit()
+            
                 
+
         key_pressed = pygame.key.get_pressed()
-        player1_movement(key_pressed,PLAYER_1)
-        player2_movement(key_pressed,PLAYER_2)
         if BALL.bottom >= HEIGHT or BALL.top <= 0:
             ball_speed_y = - ball_speed_y
         
@@ -112,25 +119,37 @@ def main():
             p2_score -= 1
             ball_speed_x = -ball_speed_x
         
-        if p1_score <= 0:
+        if p1_score == -1:
             winner_text = "Player 2 Wins!"
+            draw_winner(winner_text)
+            break
            
-        if p2_score <= 0:
+        if p2_score == -1:
             winner_text = "Player 1 Wins!"
-
-        if winner_text != "":
             draw_winner(winner_text)
             break
             
         BALL.y += ball_speed_y
         BALL.x += ball_speed_x
-        
+
+        current_time = pygame.time.get_ticks()
+        current_time_sec  = (start_time - current_time)//1000
+        if current_time_sec == 10:
+            color = RED
+            if current_time_sec < 0:
+                winner_text = "TIME OUT"
+                draw_winner(winner_text)
+                pygame.time.delay(5000)
+                break
+                
         key_pressed = pygame.key.get_pressed()
+        draw_win(p1_score,p2_score)
         player1_movement(key_pressed,PLAYER_1)
         player2_movement(key_pressed,PLAYER_2)
-        draw_win(p1_score,p2_score)
+        draw_timer(str(current_time_sec),color)
+        
 
-    pygame.quite()
+    pygame.quit()
 
 if __name__ == "__main__":
     main()
